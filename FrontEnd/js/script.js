@@ -194,7 +194,7 @@ const checkIfLogged = () => {
  */
 const displaySettingMode = () => {
     const loginNav = document.querySelector('.nav-link[href="login.html"]')
-    loginNav.innerHTML = "Log Out";
+    loginNav.innerHTML = "Logout";
     loginNav.addEventListener("click", () => {
         localStorage.removeItem("token");
     });
