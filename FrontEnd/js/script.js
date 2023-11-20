@@ -2,44 +2,110 @@ const API = "http://localhost:5678/api";
 const OBJECT_ID = 1;
 const APPARTEMENT_ID = 2;
 const HOTELS_ID = 3;
-const CATEGORIES_ID = [OBJECT_ID, APPARTEMENT_ID, HOTELS_ID];
+const OBJECT_CAT = "objets";
+const APPARTEMENT_CAT = "appartements";
+const HOTELS_CAT = "hotel-resto";
+const TOUS_CAT = "tous";
 
-const displayFilters = async () => {
+
 /**
- * Displays filter buttons
+ * @brief Displays filter buttons
  */
-    const filters = document.getElementsByClassName("filters-container")[0];
+const displayFilters = async () => {
+
+    const filters = document.querySelector(".filters-container");
     const response = await fetch(API+"/categories");
-    const categories = await response.json();
+    // "Tous" isn't a category in the API so we add that to make the button
+    const tousCat = {
+        "id": 0,
+        "name": "Tous"
+    }
+    let categories = await response.json();
+    categories.unshift(tousCat);
 
     for (category of categories) {
         const button = document.createElement("button");
         button.textContent = category.name;
-        button.value = category.name;
+        button.value = nameToCategory(category.name);
         button.className = "filter";
-
+        if (button.value == "tous") {
+            button.classList.add("filter-active");
+        }
         filters.appendChild(button);
+        setFilterListener(button);
     }
 }
 
-const removeFilters = async () => {
 /**
- * removes filter buttons
+ * 
+ * @param {string} name: the name of categories
+ * @returns Standardized string of category name
  */
+const nameToCategory = (name) => {
+    switch (name) {
+
+        case "Objets":
+            return "objets";
+        
+        case "Appartements":
+            return APPARTEMENT_CAT;
+        
+        case "Hotels & restaurants":
+            return HOTELS_CAT;
+        
+        case "Tous":
+            return TOUS_CAT;
+        
+        default:
+            return "Error";
+    }
+}
+
+/**
+ * @brief removes filter buttons
+ */
+const removeFilters = async () => {
+
     const filters = document.querySelector(".filters-container");
     filters.innerHTML = "";
 }
 
-const determineWorkCategory = (work) => {
+/**
+ * @brief sets a listener for "click" event for the specified filter
+ * 
+ * @param {object} filter 
+ */
+const setFilterListener = async (targetFilter) => {
+    targetFilter.addEventListener("click", () => {
+        const filters = document.getElementsByClassName("filter");
+        for (let filter of filters) {
+            if (filter.className.includes("filter-active")) {
+                filter.classList.remove("filter-active");
+            }
+        }
+        targetFilter.classList.add("filter-active");
+        console.log("listener activated for " + targetFilter.value);
+        filterByCategory(targetFilter.value);
+    })
+}
+
+/**
+ * Determine a corresponding category name from category id
+ * 
+ * @param {object} work from API
+ * @returns Standardized category name
+ */
+const idToCategory = (work) => {
+
     switch (work.category.id) {
         case OBJECT_ID:
-            return "objet";
+            return OBJECT_CAT;
         
         case APPARTEMENT_ID:
-            return"appartement";
+            return APPARTEMENT_CAT;
         
         case HOTELS_ID:
-            return "hotel-resto";
+            return HOTELS_CAT;
         
         default:
             console.log("Invalid work category id");
@@ -48,19 +114,21 @@ const determineWorkCategory = (work) => {
     }
 }
 
-const displayWorks = async () => {
+
 /**
- *  Displays all example work
+ * @brief display work examples and add a category to them
  */
+const displayWorks = async () => {
     const response = await fetch(API+"/works");
     const works = await response.json();
     const gallery = document.querySelector(".gallery");
-    gallery.innerHTML = "";
+    gallery.innerHTML = ""; //Reset gallery
 
     for (let work of works) {
-        const category = determineWorkCategory(work);
+        // const category = idToCategory(work);
         const figure = document.createElement("figure");
-        figure.setAttribute("category", category);
+        figure.setAttribute("category", idToCategory(work));
+        figure.classList.add("work");
 
         const img = document.createElement("img");
         img.alt = work.title;
@@ -68,25 +136,59 @@ const displayWorks = async () => {
 
         const figcaption = document.createElement("figcaption");
         figcaption.textContent = work.title;
-
+        
         figure.appendChild(img);
         figure.appendChild(figcaption);
         gallery.appendChild(figure);
     }
-
 }
 
-const filterByCategory = async (category) => {
+
 /**
+ * @brief Adds "work-inactive" class to work examples 
+ * that do not have the specified category property and removes it from the specified category
  * 
+ * @param {string} category 
  */
+const filterByCategory = async (category) => {
+
+    const gallery = document.querySelector(".gallery");
+    console.log(category);
+    if (category == TOUS_CAT){
+        // Display all work example when "all" filter is on
+        for (let i=0; i < gallery.children.length; i++) {
+            const work = gallery.children[i];
+            work.classList.remove("work-inactive");
+        }
+    } else {
+        for (let i=0; i < gallery.children.length; i++) {
+            const work = gallery.children[i];
+            if (work.getAttribute("category") === category) {
+                console.log(work);
+                work.classList.remove("work-inactive");
+            } else {
+                console.log(work);
+                work.classList.add("work-inactive");
+            }
+        }
+    }
 }
 
 
+
+/**
+ * @brief Initializes the index page
+ */
 const init = () => {
     displayFilters();
 
     displayWorks();
+
+    const gallery = document.querySelector(".gallery");
+    console.log(gallery.children);
+    for (let work of gallery.children) {
+        console.log(work);
+    }
 }
 
 init();

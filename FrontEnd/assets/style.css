@@ -190,6 +190,7 @@ margin: auto;
 .filter-active {
 	background-color: #1D6154;
 	color: white;
+	cursor: default;
 }
 
 .work-inactive {
