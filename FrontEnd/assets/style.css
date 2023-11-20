@@ -90,12 +90,20 @@ nav ul {
 	list-style-type: none;
 
 }
-nav li {
+nav li, li a {
 	padding: 0 10px;
 	font-size: 1.2em;
 }
 
-li:hover {
+li a {
+	text-decoration: none;
+}
+
+li a:visited {
+	color: black;
+}
+
+li:hover, li a:hover {
 	color: #B1663C;
 }
 #introduction {
@@ -208,9 +216,65 @@ input[type="submit"]{
 	border-radius: 60px ;
 }
 
+footer {
+	background-color: white;
+}
+
 footer nav ul {
 	display: flex;
 	justify-content: flex-end;
 	margin: 2em
 }
 
+
+.login-body {
+	background-color: #FFFEF8;
+	margin-bottom: 0;
+}
+
+.login-body footer nav ul {
+	margin: 0;
+	padding: 24px 0;
+}
+
+.login-section {
+	margin-top: 150px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.login-form {
+	margin-top: 37px;
+	width: 37%;
+	display: flex;
+	flex-direction: column;
+}
+
+.login-field {
+	margin-top: 7px;
+	margin-bottom: 30px;
+	height: 51px;
+	border: transparent;
+	background-color: #FFF;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+}
+
+.connect-button {
+	margin-top: 7px;
+	border: none;
+	padding: 10px 38px;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.forgot-password {
+	color: black;
+	text-decoration: underline;
+	margin-bottom: 355px;
+}
+
+.forgot-password:visited {
+	color: black;
+}
