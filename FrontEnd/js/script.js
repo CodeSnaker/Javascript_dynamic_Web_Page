@@ -164,14 +164,45 @@ const filterByCategory = async (category) => {
         for (let i=0; i < gallery.children.length; i++) {
             const work = gallery.children[i];
             if (work.getAttribute("category") === category) {
-                console.log(work);
                 work.classList.remove("work-inactive");
             } else {
-                console.log(work);
                 work.classList.add("work-inactive");
             }
         }
     }
+}
+
+/**
+ * @brief when initiating the page, checks if logged in or not,
+ * then switch to setting mode if logged in
+ * 
+ */
+const checkIfLogged = () => {
+    const siteUser = window.localStorage.getItem("token");
+
+    if (siteUser === null) {
+        return;
+    }
+
+    displaySettingMode();
+}
+
+
+/**
+ * @brief Makes changes for Setting Mode
+ * 
+ */
+const displaySettingMode = () => {
+    const loginNav = document.querySelector('.nav-link[href="login.html"]')
+    loginNav.innerHTML = "Log Out";
+    loginNav.addEventListener("click", () => {
+        localStorage.removeItem("token");
+    });
+
+    document.querySelector(".header").style.marginTop = "88px";
+    document.querySelector(".setting-header").style.display = "flex";
+    document.querySelector(".filters-container").style.display = "none";
+    document.querySelector(".modifier-projects").style.display = "flex";
 }
 
 
@@ -189,6 +220,9 @@ const init = () => {
     for (let work of gallery.children) {
         console.log(work);
     }
+
+    checkIfLogged();
+
 }
 
 init();

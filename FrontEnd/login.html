@@ -9,7 +9,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Work+Sans&display=swap" rel="stylesheet">
 	<meta name="description" content="">
 	<link rel="stylesheet" href="./assets/style.css">
-	<script src="js/script.js" defer></script>
+    <script src="js/login.js" defer></script>
 </head>
 <body class="login-body">
     <header>
@@ -17,8 +17,7 @@
         <nav>
             <ul>
                 <li><a href="index.html" class="nav-link">projets</a></li>
-                <li><a href="" class="nav-link">contact</a></li>
-                <li><a href="login.html" class="nav-link">login</a></li>
+                <li><a href="index.html#contact" class="nav-link">contact</a></li>
                 <li><img src="./assets/icons/instagram.png" alt="Instagram"></li>
             </ul>
         </nav>
@@ -27,10 +26,10 @@
 		<h2>Login</h2>
 		<form action="#" method="post" class="login-form">
 			<label for="email">E-mail</label>
-			<input type="email" name="email" id="email" class="login-field">
+			<input type="email" name="email" id="email" class="login-field email-field">
 			<label for="password">Mot de passe</label>
-			<input type="password" id="password" class="login-field"></input>
-			<input type="submit" value="Se connecter" class="connect-button">
+			<input type="password" id="password" class="login-field password-field"></input>
+			<button class="connect-button">Se connecter</button>
 		</form>
         <a href="" class="forgot-password">Mot de passe oublié</a>
 	</section>

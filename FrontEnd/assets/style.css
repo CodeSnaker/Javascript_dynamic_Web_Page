@@ -53,13 +53,36 @@ body {
 	font-family: 'Work Sans' ;
 	font-size: 14px;
 }
+.setting-header {
+	display: none;
+	justify-content: center;
+	align-items: center;
+	background-color: black;
+	height: 59px;
+	width: 100%;
+	gap: 5px;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.setting-header .fa-pen-to-square {
+	color: #FFF;
+}
+.setting-header p {
+	color: white;
+}
 header {
 	display: flex;
+	flex-direction: column;
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+.header {
+	display: flex;
 	justify-content: space-between;
-	margin: 50px 0
 }
 section {
-	margin: 50px 0
+	margin: 50px 0;
 }
 
 h1{
@@ -84,26 +107,28 @@ h2{
 	font-size: 30px;
 	color: #1D6154
 }
+h2 .fa-pen-to-square {
+	font-size: 14px;
+	color: black;
+}
 nav ul {
 	display: flex;
 	align-items: center;
 	list-style-type: none;
 
 }
-nav li, li a {
+nav li, .nav-link {
 	padding: 0 10px;
 	font-size: 1.2em;
-}
-
-li a {
 	text-decoration: none;
-}
-
-li a:visited {
 	color: black;
 }
 
-li:hover, li a:hover {
+.nav-link:visited {
+	color: black;
+}
+
+li:hover .nav-link:hover{
 	color: #B1663C;
 }
 #introduction {
@@ -131,7 +156,19 @@ li:hover, li a:hover {
 }
 #portfolio h2 {
 	text-align: center;
+}
+.projects-title {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 31px;
 	margin-bottom: 1em;
+}
+
+.modifier-projects {
+	display: none;
+	font-size: 14px;
+	gap: 10px;
 }
 .gallery {
 	width: 100%;
@@ -226,7 +263,6 @@ footer nav ul {
 	margin: 2em
 }
 
-
 .login-body {
 	background-color: #FFFEF8;
 	margin-bottom: 0;
@@ -252,6 +288,13 @@ footer nav ul {
 	flex-direction: column;
 }
 
+.error-message {
+	color: red;
+	margin: 5px 0;
+	font-family: 'Syne';
+	font-size: 12px;;
+}
+
 .login-field {
 	margin-top: 7px;
 	margin-bottom: 30px;
@@ -259,14 +302,25 @@ footer nav ul {
 	border: transparent;
 	background-color: #FFF;
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+	outline: none;
+	padding-left: 5px;
 }
 
 .connect-button {
+	font-family: 'Syne';
+	font-weight: 700;
+	color: white;
+	background-color: #1D6154;
 	margin-top: 7px;
+	margin-bottom: 28px;
 	border: none;
 	padding: 10px 38px;
 	font-size: 14px;
 	cursor: pointer;
+	width: 180px;
+	text-align: center;
+	border-radius: 60px;
+	align-self: center;
 }
 
 .forgot-password {
