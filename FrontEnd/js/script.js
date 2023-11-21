@@ -28,7 +28,7 @@ const displayFilters = async () => {
         button.textContent = category.name;
         button.value = nameToCategory(category.name);
         button.className = "filter";
-        if (button.value == "tous") {
+        if (button.value === "tous") {
             button.classList.add("filter-active");
         }
         filters.appendChild(button);
@@ -59,15 +59,6 @@ const nameToCategory = (name) => {
         default:
             return "Error";
     }
-}
-
-/**
- * @brief removes filter buttons
- */
-const removeFilters = async () => {
-
-    const filters = document.querySelector(".filters-container");
-    filters.innerHTML = "";
 }
 
 /**
@@ -116,7 +107,8 @@ const idToCategory = (work) => {
 
 
 /**
- * @brief display work examples and add a category to them
+ * @brief display project examples saved in back-end in 'mes projets' section
+ * and adds a category to each
  */
 const displayWorks = async () => {
     const response = await fetch(API+"/works");
@@ -143,6 +135,50 @@ const displayWorks = async () => {
     }
 }
 
+/**
+ * @brief displays project examples saved in back-end in modal window
+ * and adds a category to each
+ * 
+ */
+const displayModalWorks = async () => {
+    const response = await fetch(API+"/works");
+    const works = await response.json();
+    const gallery = document.querySelector(".modal-works");
+
+    for (let work of works) {
+        const figure = document.createElement("figure");
+        figure.setAttribute("category", idToCategory(work));
+        figure.classList.add("work");
+
+        const img = document.createElement("img");
+        img.alt = work.title;
+        img.src = work.imageUrl;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("delete-button");
+        // setDeleteWorkListener(deleteButton);
+        
+        const deleteIcon = document.createElement("i");
+        deleteIcon.className = "fa-solid fa-trash-can";
+        deleteButton.appendChild(deleteIcon)
+
+        figure.appendChild(img);
+        figure.appendChild(deleteButton);
+        gallery.appendChild(figure);
+    }
+}
+
+/**
+ * @brief Set event listener for a delete button in modal window
+ * 
+ * @param {Node} button
+ */
+const setDeleteWorkListener = (button) => {
+    button.addEventListener("click", () => {
+        //TODO
+    });
+}
+
 
 /**
  * @brief Adds "work-inactive" class to work examples 
@@ -150,14 +186,15 @@ const displayWorks = async () => {
  * 
  * @param {string} category 
  */
-const filterByCategory = async (category) => {
+const filterByCategory = (category) => {
 
     const gallery = document.querySelector(".gallery");
     console.log(category);
-    if (category == TOUS_CAT){
+    if (category === TOUS_CAT){
         // Display all work example when "all" filter is on
-        for (let i=0; i < gallery.children.length; i++) {
-            const work = gallery.children[i];
+        const inactiveWorks = document.querySelectorAll(".work-inactive");
+        for (let i=0; i < inactiveWorks.length; i++) {
+            const work = inactiveWorks[i];
             work.classList.remove("work-inactive");
         }
     } else {
@@ -194,15 +231,53 @@ const checkIfLogged = () => {
  */
 const displaySettingMode = () => {
     const loginNav = document.querySelector('.nav-link[href="login.html"]')
-    loginNav.innerHTML = "Logout";
+    loginNav.innerHTML = "logout";
     loginNav.addEventListener("click", () => {
         localStorage.removeItem("token");
     });
 
     document.querySelector(".header").style.marginTop = "88px";
     document.querySelector(".setting-header").style.display = "flex";
+    document.querySelector(".projects-title").style.marginBottom = "92px";
     document.querySelector(".filters-container").style.display = "none";
     document.querySelector(".modifier-projects").style.display = "flex";
+}
+
+/**
+ * @brief Set event listeners for 'modifier' button in 'mes projets' section
+ * 
+ */
+const setModifierListener = () => {
+    const modifierDiv = document.querySelector(".modifier-projects");
+
+    modifierDiv.addEventListener("click", () => {
+        document.querySelector(".modal-background").style.display = "block";
+        document.querySelector(".modal-gallery").style.display = "flex";
+    })
+}
+
+/**
+ * @brief Set event listeners for close 'X' buttons in modal windows
+ * 
+ */
+const setCloseListeners = () => {
+    const closeButtons = document.querySelectorAll(".close-button");
+    for (let i = 0; i < closeButtons.length; i++) {
+        closeButtons[i].addEventListener("click", () => {
+            document.querySelector(".modal-background").style.display = "none";
+            document.querySelector(".modal-gallery").style.display = "none";
+        })
+    }
+}
+
+/**
+ * @brief configure Modal windows
+ * 
+ */
+const configureModals = async () => {
+    setModifierListener();
+    await displayModalWorks();
+    setCloseListeners();
 }
 
 
@@ -212,8 +287,8 @@ const displaySettingMode = () => {
  */
 const init = () => {
     displayFilters();
-
     displayWorks();
+    setModals();
 
     const gallery = document.querySelector(".gallery");
     console.log(gallery.children);

@@ -37,10 +37,7 @@ const setSubmitListener = async () => {
             default:
                 console.log("Untreated status code : " + String(response.status));
                 break;
-
         }
-
-        
     })
 }
 
