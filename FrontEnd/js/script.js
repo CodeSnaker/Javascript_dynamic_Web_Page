@@ -1,64 +1,33 @@
 const API = "http://localhost:5678/api";
-const OBJECT_ID = 1;
-const APPARTEMENT_ID = 2;
-const HOTELS_ID = 3;
-const OBJECT_CAT = "objets";
-const APPARTEMENT_CAT = "appartements";
-const HOTELS_CAT = "hotel-resto";
-const TOUS_CAT = "tous";
+const USER_TOKEN = localStorage.getItem("token");
 
 
 /**
  * @brief Displays filter buttons
  */
-const displayFilters = async () => {
+const displayCategories = async () => {
 
     const filters = document.querySelector(".filters-container");
     const response = await fetch(API+"/categories");
-    // "Tous" isn't a category in the API so we add that to make the button
-    const tousCat = {
-        "id": 0,
-        "name": "Tous"
-    }
-    let categories = await response.json();
-    categories.unshift(tousCat);
 
+    let categories = await response.json();
+
+    setFilterListener(document.querySelector(".filter"));
+
+    const select = document.getElementById("category");
     for (category of categories) {
         const button = document.createElement("button");
         button.textContent = category.name;
-        button.value = nameToCategory(category.name);
         button.className = "filter";
-        if (button.value === "tous") {
-            button.classList.add("filter-active");
-        }
         filters.appendChild(button);
         setFilterListener(button);
-    }
-}
 
-/**
- * 
- * @param {string} name: the name of categories
- * @returns Standardized string of category name
- */
-const nameToCategory = (name) => {
-    switch (name) {
-
-        case "Objets":
-            return "objets";
-        
-        case "Appartements":
-            return APPARTEMENT_CAT;
-        
-        case "Hotels & restaurants":
-            return HOTELS_CAT;
-        
-        case "Tous":
-            return TOUS_CAT;
-        
-        default:
-            return "Error";
+        let option = document.createElement("option");
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
     }
+
 }
 
 /**
@@ -75,36 +44,9 @@ const setFilterListener = async (targetFilter) => {
             }
         }
         targetFilter.classList.add("filter-active");
-        console.log("listener activated for " + targetFilter.value);
-        filterByCategory(targetFilter.value);
+        filterByCategory(targetFilter.textContent);
     })
 }
-
-/**
- * Determine a corresponding category name from category id
- * 
- * @param {object} work from API
- * @returns Standardized category name
- */
-const idToCategory = (work) => {
-
-    switch (work.category.id) {
-        case OBJECT_ID:
-            return OBJECT_CAT;
-        
-        case APPARTEMENT_ID:
-            return APPARTEMENT_CAT;
-        
-        case HOTELS_ID:
-            return HOTELS_CAT;
-        
-        default:
-            console.log("Invalid work category id");
-            console.log(work);
-            return "error";
-    }
-}
-
 
 /**
  * @brief display project examples saved in back-end in 'mes projets' section
@@ -114,17 +56,22 @@ const displayWorks = async () => {
     const response = await fetch(API+"/works");
     const works = await response.json();
     const gallery = document.querySelector(".gallery");
+    const galleryModal = document.querySelector(".modal-works");
     gallery.innerHTML = ""; //Reset gallery
 
     for (let work of works) {
-        // const category = idToCategory(work);
         const figure = document.createElement("figure");
-        figure.setAttribute("category", idToCategory(work));
+        figure.setAttribute("category", work.category.name);
+        figure.dataset.workid = work.id;
         figure.classList.add("work");
 
         const img = document.createElement("img");
         img.alt = work.title;
         img.src = work.imageUrl;
+        // Need to create a deep copy to put in modal window
+        const imgCopy = img.cloneNode(true);
+
+        const figureCopy = figure.cloneNode(true);
 
         const figcaption = document.createElement("figcaption");
         figcaption.textContent = work.title;
@@ -132,41 +79,21 @@ const displayWorks = async () => {
         figure.appendChild(img);
         figure.appendChild(figcaption);
         gallery.appendChild(figure);
-    }
-}
-
-/**
- * @brief displays project examples saved in back-end in modal window
- * and adds a category to each
- * 
- */
-const displayModalWorks = async () => {
-    const response = await fetch(API+"/works");
-    const works = await response.json();
-    const gallery = document.querySelector(".modal-works");
-
-    for (let work of works) {
-        const figure = document.createElement("figure");
-        figure.setAttribute("category", idToCategory(work));
-        figure.classList.add("work");
-
-        const img = document.createElement("img");
-        img.alt = work.title;
-        img.src = work.imageUrl;
 
         const deleteButton = document.createElement("button");
         deleteButton.classList.add("delete-button");
-        // setDeleteWorkListener(deleteButton);
+        setDeleteWorkListener(deleteButton);
         
         const deleteIcon = document.createElement("i");
         deleteIcon.className = "fa-solid fa-trash-can";
-        deleteButton.appendChild(deleteIcon)
+        deleteButton.appendChild(deleteIcon);
 
-        figure.appendChild(img);
-        figure.appendChild(deleteButton);
-        gallery.appendChild(figure);
+        figureCopy.appendChild(imgCopy);
+        figureCopy.appendChild(deleteButton);
+        galleryModal.appendChild(figureCopy);
     }
 }
+
 
 /**
  * @brief Set event listener for a delete button in modal window
@@ -174,14 +101,49 @@ const displayModalWorks = async () => {
  * @param {Node} button
  */
 const setDeleteWorkListener = (button) => {
-    button.addEventListener("click", () => {
-        //TODO
+    button.addEventListener("click", async () => {
+
+        console.log("Delete listener activated")
+        const parentFigure = button.parentElement;
+        console.log(parentFigure.dataset.workid);
+        const workId = parentFigure.dataset.workid;
+
+        const deleteResponse = await fetch(API + "/works/" + workId, {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + USER_TOKEN,
+            }
+        });
+        console.log(deleteResponse);
+        switch(deleteResponse.status) {
+
+            case 204:
+                const worksToDelete = document.querySelectorAll('[data-workid="' + workId + '"]');
+                console.log(worksToDelete);
+
+                for (let i=0; i < worksToDelete.length; i++) {
+                    worksToDelete[i].remove();
+                }
+                break;
+            
+            case 401:
+                console.log("Deletion of work number " + workId + " unauthorized");
+                break;
+            
+            case 500:
+                console.log("Unexpected behavior for work number" + workId);
+                break;
+            
+            default:
+                console.log("Untreated status code:" + deleteResponse.status);
+                break;
+        }
     });
 }
 
-
 /**
- * @brief Adds "work-inactive" class to work examples 
+ * @brief Adds "hidden" class to work examples 
  * that do not have the specified category property and removes it from the specified category
  * 
  * @param {string} category 
@@ -189,21 +151,20 @@ const setDeleteWorkListener = (button) => {
 const filterByCategory = (category) => {
 
     const gallery = document.querySelector(".gallery");
-    console.log(category);
-    if (category === TOUS_CAT){
+    if (category === "Tous"){
         // Display all work example when "all" filter is on
-        const inactiveWorks = document.querySelectorAll(".work-inactive");
+        const inactiveWorks = document.querySelectorAll(".work.hidden");
         for (let i=0; i < inactiveWorks.length; i++) {
             const work = inactiveWorks[i];
-            work.classList.remove("work-inactive");
+            work.classList.remove("hidden");
         }
     } else {
         for (let i=0; i < gallery.children.length; i++) {
             const work = gallery.children[i];
             if (work.getAttribute("category") === category) {
-                work.classList.remove("work-inactive");
+                work.classList.remove("hidden");
             } else {
-                work.classList.add("work-inactive");
+                work.classList.add("hidden");
             }
         }
     }
@@ -224,7 +185,6 @@ const checkIfLogged = () => {
     displaySettingMode();
 }
 
-
 /**
  * @brief Makes changes for Setting Mode
  * 
@@ -236,11 +196,11 @@ const displaySettingMode = () => {
         localStorage.removeItem("token");
     });
 
-    document.querySelector(".header").style.marginTop = "88px";
-    document.querySelector(".setting-header").style.display = "flex";
+    document.querySelector(".header").classList.add("setting-mode");
+    document.querySelector(".setting-header").classList.remove("hidden");
     document.querySelector(".projects-title").style.marginBottom = "92px";
-    document.querySelector(".filters-container").style.display = "none";
-    document.querySelector(".modifier-projects").style.display = "flex";
+    document.querySelector(".filters-container").classList.add("hidden");
+    document.querySelector(".modifier-projects").classList.remove("hidden");
 }
 
 /**
@@ -251,8 +211,8 @@ const setModifierListener = () => {
     const modifierDiv = document.querySelector(".modifier-projects");
 
     modifierDiv.addEventListener("click", () => {
-        document.querySelector(".modal-background").style.display = "block";
-        document.querySelector(".modal-gallery").style.display = "flex";
+        document.querySelector(".modal-background").classList.remove("hidden");
+        document.querySelector(".modal-gallery").classList.remove("hidden");
     })
 }
 
@@ -264,10 +224,181 @@ const setCloseListeners = () => {
     const closeButtons = document.querySelectorAll(".close-button");
     for (let i = 0; i < closeButtons.length; i++) {
         closeButtons[i].addEventListener("click", () => {
-            document.querySelector(".modal-background").style.display = "none";
-            document.querySelector(".modal-gallery").style.display = "none";
+            document.querySelector(".modal-background").classList.add("hidden");
+            document.querySelector(".modal-gallery").classList.add("hidden");
+            document.querySelector(".modal-menu").classList.add("hidden");
+            resetNewWorkForm();
         })
     }
+}
+
+/**
+ * @brief Set event listener for return button in modal menu window
+ * 
+ */
+const setReturnListener = () => {
+    const returnButton = document.querySelector(".return-button");
+    returnButton.addEventListener("click", () => {
+        document.querySelector(".modal-gallery").classList.remove("hidden");
+        document.querySelector(".modal-menu").classList.add("hidden");
+        resetNewWorkForm();
+    })
+}
+
+/**
+ * @brief Set event listener for "Ajouter une photo" button in modal window
+ * 
+ */
+const setAddMenuListener = () => {
+    const addPhotoButton = document.querySelector(".add-menu-button");
+    addPhotoButton.addEventListener("click", () => {
+        document.querySelector(".modal-gallery").classList.add("hidden");
+        document.querySelector(".modal-menu").classList.remove("hidden");
+    });
+}
+
+
+/**
+ * 
+ * 
+ */
+const setFileInputListener = () => {
+    const inputButton = document.querySelector(".file-input input[type=\"file\"]");
+    inputButton.addEventListener("change", (event) => {
+
+        const imageInput = document.querySelector(".image-input");
+        const previewImage = document.querySelector(".preview-image");
+        console.log(inputButton.files[0]);
+        if (event.target.files.length > 0) {
+            previewImage.src = URL.createObjectURL(
+              event.target.files[0],
+            );
+            
+            previewImage.classList.remove("hidden");
+            imageInput.classList.add("hidden");
+        }
+
+    });
+}
+
+const resetNewWorkForm = () => {
+    const newWorkForm = document.querySelector(".photo-details");
+    const imageInput = document.querySelector(".image-input");
+    const previewImage = document.querySelector(".preview-image");
+
+    newWorkForm.reset();
+    previewImage.src = "";
+
+    previewImage.classList.add("hidden");
+    imageInput.classList.remove("hidden");
+    for (let errorMessage of document.querySelectorAll(".modal-error")) {
+        errorMessage.classList.add("hidden");
+    }
+}
+
+const setFormChangeListener = () => {
+    const form = document.forms.namedItem("newWork");
+    form.addEventListener("change", () => {
+        const formData = new FormData(form);
+
+        if (checkFormFilled(formData)) {
+            document.querySelector(".validate-button").classList.remove("not-valid");
+        } else {
+            document.querySelector(".validate-button").classList.add("not-valid");
+        }
+    })
+}
+
+const checkFormFilled = (formData) => {
+
+    if (formData.get("image") === null) {
+        return false;
+    }
+
+    if (formData.get("title") === "") {
+        return false;
+    }
+
+    if (formData.get("category") === "") {
+        return false;
+    }
+
+    return true;
+}
+
+const displayErrorMessages = (formData) => {
+
+    if (formData.get("image") === null) {
+        document.getElementById("error-image").classList.remove("hidden");
+    } else {
+        document.getElementById("error-image").classList.add("hidden");
+    }
+
+    if (formData.get("title") === "") {
+        document.getElementById("error-title").classList.remove("hidden");
+    } else {
+        document.getElementById("error-title").classList.add("hidden");
+    }
+
+    if (formData.get("category") === "") {
+        document.getElementById("error-category").classList.remove("hidden");
+    } else {
+        document.getElementById("error-image").classList.add("hidden");
+    }
+}
+
+const setSendWorkListener = async () => {
+    document.querySelector(".validate-button").addEventListener("click", async (event) => {
+        event.preventDefault();
+        const form = document.forms.namedItem("newWork");
+        const formData = new FormData(form);
+        if (!checkFormFilled(formData)) {
+            displayErrorMessages(formData);
+            return;
+        }
+        const inputButton = document.querySelector(".file-input input[type=\"file\"]");
+        formData.set("image", inputButton.files[0]);
+        console.log(formData);
+        console.log(formData.get("image"));
+
+
+        const sendResponse = await fetch(API + "/works", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + USER_TOKEN,
+            },
+            body: formData,
+        });
+
+        console.log(sendResponse.status);
+        console.log(sendResponse.json());
+        switch (sendResponse.status) {
+
+            case 401:
+                console.log("401 Unauthorized");
+                break;
+
+            case 400:
+                console.log("400 Bad Request");
+                break;
+
+            case 500:
+                console.log("500 Unexpected Error");
+                break;
+
+            case 201:
+                document.querySelector(".gallery").innerHTML = "";
+                document.querySelector(".modal-works").innerHTML = "";
+                displayWorks();
+                resetNewWorkForm();
+                return;
+            
+            default:
+                console.log("Unexpected status code" );
+            
+        }
+    });
 }
 
 /**
@@ -276,8 +407,12 @@ const setCloseListeners = () => {
  */
 const configureModals = async () => {
     setModifierListener();
-    await displayModalWorks();
     setCloseListeners();
+    setReturnListener();
+    setAddMenuListener();
+    setFileInputListener();
+    setSendWorkListener();
+    setFormChangeListener();
 }
 
 
@@ -286,12 +421,10 @@ const configureModals = async () => {
  * @brief Initializes the index page
  */
 const init = () => {
-    displayFilters();
+    displayCategories();
     displayWorks();
-    setModals();
-
+    configureModals();
     const gallery = document.querySelector(".gallery");
-    console.log(gallery.children);
     for (let work of gallery.children) {
         console.log(work);
     }
