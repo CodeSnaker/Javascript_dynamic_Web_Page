@@ -20,7 +20,7 @@
 </head>
 <body>
 <header>
-	<div class="setting-header">
+	<div class="setting-header hidden">
 		<i class="fa-solid fa-pen-to-square"></i>
 		<p>Mode édition</p>
 	</div>
@@ -51,10 +51,45 @@
 	<section id="portfolio">
 		<div class="projects-title">
 			<h2>Mes Projets</h2>
-			<p class="modifier-projects"><i class="fa-solid fa-pen-to-square"></i>modifier</p>
+			<p class="modifier-projects hidden"><i class="fa-solid fa-pen-to-square"></i>modifier</p>
 		</div>
 		<div class="filters-container">
-			<!-- <button  class="filter filter-active" value="Tous">Tous</button> -->
+			<button class="filter filter-active">Tous</button>
+		</div>
+		<div class="modal-background hidden"></div>
+		<div class="modal-gallery hidden">
+			<button class="close-button"><i class="fa-solid fa-x"></i></button>
+			<h3>Galerie photo</h3>
+			<div class="modal-works"></div>
+			<button class="add-menu-button">Ajouter une photo</button>
+		</div>
+		<div class="modal-menu hidden">
+			<button class="return-button"><i class="fa-solid fa-arrow-left"></i></button>
+			<button class="close-button"><i class="fa-solid fa-x"></i></button>
+			<h3>Ajout photo</h3>
+			<form enctype="multipart/form-data" name="newWork" id="newWork" class="photo-details" action="#" method="post">
+				<div class="add-photo">
+					<img src="." alt="." class="preview-image hidden">
+					<div class="image-input">
+						<i class="fa-regular fa-image"></i>
+						<div class="file-input">
+							<label class="photo-file-button" for="image">+ Ajouter photo</label>
+							<input type="file" name="image" id="image" accept="image/jpg image/png">
+						</div>
+						<p>jpg, png: 4 Mo max
+							<span class="modal-error hidden" id="error-image"><br>Veuillez choisir un fichier jpg ou png.</span>
+						</p>
+					</div>
+				</div>
+
+				<label for="title">Titre<span class="modal-error hidden" id="error-title"><br>Veuillez remplir ce champ.</span></label>
+				<input type="text" name="title" id="title">
+				<label for="category">Catégorie<span class="modal-error hidden" id="error-category"><br>Veuillez remplir ce champ.</span></label>
+				<select name="category" id="category">
+					<Option value="">Choisir une catégorie</Option>
+				</select>
+				<button class="validate-button not-valid">Valider</button>
+			</form>
 		</div>
 		<div class="gallery">
 		</div>
