@@ -246,7 +246,7 @@ const setReturnListener = () => {
 }
 
 /**
- * @brief Set event listener for "Ajouter une photo" button in modal window
+ * @brief Sets event listener for "Ajouter une photo" button in modal window
  * 
  */
 const setAddMenuListener = () => {
@@ -259,11 +259,11 @@ const setAddMenuListener = () => {
 
 
 /**
- * 
+ * @brief Sets Listener to input file button to display preview image of chosen file
  * 
  */
 const setFileInputListener = () => {
-    const inputButton = document.querySelector(".file-input input[type=\"file\"]");
+    const inputButton = document.getElementById("image");
     inputButton.addEventListener("change", (event) => {
 
         const imageInput = document.querySelector(".image-input");
@@ -350,22 +350,19 @@ const displayErrorMessages = (formData) => {
 const setSendWorkListener = async () => {
     document.querySelector(".validate-button").addEventListener("click", async (event) => {
         event.preventDefault();
-        const form = document.forms.namedItem("newWork");
+        const form = document.getElementById("newWork");
         const formData = new FormData(form);
+
         if (!checkFormFilled(formData)) {
             displayErrorMessages(formData);
             return;
         }
-        const inputButton = document.querySelector(".file-input input[type=\"file\"]");
-        formData.set("image", inputButton.files[0]);
         console.log(formData);
-        console.log(formData.get("image"));
 
 
         const sendResponse = await fetch(API + "/works", {
             method: "POST",
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + USER_TOKEN,
             },
             body: formData,
@@ -392,6 +389,8 @@ const setSendWorkListener = async () => {
                 document.querySelector(".modal-works").innerHTML = "";
                 displayWorks();
                 resetNewWorkForm();
+                document.querySelector(".modal-gallery").classList.remove("hidden");
+                document.querySelector(".modal-menu").classList.add("hidden");
                 return;
             
             default:
@@ -402,7 +401,7 @@ const setSendWorkListener = async () => {
 }
 
 /**
- * @brief configure Modal windows
+ * @brief configure Modal windows, set listeners where there needs to be
  * 
  */
 const configureModals = async () => {
